@@ -21,6 +21,7 @@
                     <div class="navbar-end">
                     {% if user.is_authenticated %}
                     <a href="{% url 'test' %}" class="navbar-item">Matches</a> | 
+                    <a href="{% url 'top_artists' %}" class="navbar-item">Top Artists</a> | 
                     <a href="{% url 'profile_page' %}" class="navbar-item">My Profile</a> |
                     <a href="{% url 'logout' %}" class="navbar-item"> Logout </a>
                 

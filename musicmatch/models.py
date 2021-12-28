@@ -58,3 +58,6 @@ class UserProfile(models.Model):
             return 'She/They'
         elif self.pronouns == 'AM':
             return 'Please Ask For My Pronouns'
+    
+    def get_tokens(self):
+        return self.access_token, self.refresh_token 

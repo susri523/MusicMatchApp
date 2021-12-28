@@ -14,7 +14,6 @@
 
   <form action="{% url 'complete_profile' profile.pk %}" method='POST'>
     {% csrf_token %}
-
     <button class="button is-block is-info is-small is-fullwidth">Update my info!</button>
   </form>
 
