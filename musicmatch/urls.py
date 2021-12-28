@@ -7,13 +7,20 @@ from .views import *
 
 
 urlpatterns = [
+    # home page and spotify related 
     path('home', HomeView.as_view(), name='home'),  
     path('authspotify', auth_spotify, name='authspotify'),
-    path('test', TestView.as_view(), name='test'),  
     path('callback/', callback, name='callback'), 
     path('callback/<str:code>', callback, name='callback'),
+
+    # base view to check if path is working 
+    path('test', TestView.as_view(), name='test'),  
+
+    # update profile and view profile page 
     path('complete_profile/<int:pk>', UpdateProfile.as_view(), name='complete_profile'),
     path('profile_page', ShowProfilePage.as_view(), name='profile_page'),
+
+    # top artists, matches, match profile page, events page 
     path('top_artists', getUserTopArtist,name='top_artists'),
     path('matches', getMatches, name='matches'),
     path('match_user_page/<int:pk>', ShowMatchPage.as_view(), name='match_user_page'),
