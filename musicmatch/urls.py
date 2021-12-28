@@ -14,7 +14,9 @@ urlpatterns = [
     path('callback/<str:code>', callback, name='callback'),
     path('complete_profile/<int:pk>', UpdateProfile.as_view(), name='complete_profile'),
     path('profile_page', ShowProfilePage.as_view(), name='profile_page'),
-    path('top_artists', getUserTopArtist,name='top_artists')
+    path('top_artists', getUserTopArtist,name='top_artists'),
+    path('matches', getMatches, name='matches'),
+    path('match_user_page/<int:pk>', ShowMatchPage.as_view(), name='match_user_page'),
 
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

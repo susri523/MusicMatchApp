@@ -139,7 +139,6 @@ def getUserTopArtist(request):
 
     profile = UserProfile.objects.get(user=request.user)   
     token, refresh_token = profile.get_tokens()
-    
 
     #set up the auth head to pass in to the header for the api call 
     authorization = f'Bearer {token}'      
@@ -194,3 +193,146 @@ def getUserTopArtist(request):
     }
 
     return render(request, 'musicmatch/top_artists.html', context)
+
+def getTopArtist(pk):
+    ''' getTopArtist helper function that takes the 
+        email of the person to make the api call and 
+        return their top artists'''
+
+    profile = UserProfile.objects.get(pk=pk)
+    token, refresh_token = profile.get_tokens()
+    
+
+    #set up the auth head to pass in to the header for the api call 
+    authorization = f'Bearer {token}'      
+
+    headers = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'Authorization': authorization,
+    }
+
+    #make the api call for top artists and return response to json 
+    response = requests.get('https://api.spotify.com/v1/me/top/artists', headers=headers)
+    data = response.json()
+
+    #if there is an error then refresh the a_token
+    if 'error' in data.keys():
+
+        #call RefreshAuth and get the new_token_info and pick out a_token 
+        new_token_info = refreshAuth(refresh_token)
+        new_access_token = new_token_info['access_token']
+        
+        #update the db with the new a_token for this email pk and commit 
+        profile.token = new_access_token
+        profile.save()
+
+        # set up auth_head with new token and proper headers
+        authorization = f'Bearer {new_access_token}'      
+
+        headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': authorization,
+        }
+
+        #make api call to for top artists and store json response in data 
+        response = requests.get('https://api.spotify.com/v1/me/top/artists', headers=headers)
+        data = response.json()
+
+    #data comes back with items key in dict
+    data = data['items']
+
+    #iterate through data.items to retrieve just the name and image url of the artist
+    artists = []
+
+    for artist in data:
+        name = artist['name']
+        url = artist['images'][0]['url']
+        artists.append([name, url])
+    
+    return [profile, artists]
+
+def getMatchPercent(self_top, other_pk):
+    ''' helper function to get match percentages 
+        between two users with emails used as pk 
+        to get data '''
+
+    #use getTopArtist on each user 
+    user, artists = getTopArtist(other_pk) #returns [users, name, url]
+    other_top_artist_name = [name for name ,_ in artists]
+
+    #initialize match_count to 0
+    match_count = 0
+
+    #first elemet is names of top artists and self top artist is each top artist of self
+    for self_top_artist, _ in self_top: 
+
+         #other[1] is names of top artists, and if match increment 
+         if self_top_artist in other_top_artist_name:
+             match_count += 1
+
+    #spotify gives top 20 artists so div by 20 and mult by 100 for %
+    percent =  (match_count / 20) * 100
+    return [percent, user, artists[:3], artists]
+
+@login_required
+def getMatches(request):
+    ''' /getMatches asks for a users
+        email and uses that to get match percent
+        of all users in the database and returns the sorted 
+        list of users and their match scores'''
+
+    #retrieve the users info 
+    profile = UserProfile.objects.get(user=request.user)  
+
+    _, self_top_artists = getTopArtist(profile.pk) #returns [user, artists]
+
+    #call helper function to get all the other users in db
+    other_users = profile.get_other_users()
+
+    #iterature through the other users and generate their matches
+    all_users_top = []
+    for user in other_users:
+
+        # get match_percent between the two users 
+        user_top_info = getMatchPercent(self_top_artists, user.pk)
+
+        #only append to the beginning of the list if match > 0
+        if user_top_info[0] > 0:
+
+            #append to the main list 
+            all_users_top.append(user_top_info)
+
+    #if non empty list then sort by match_percent and descending order
+    if all_users_top:
+        all_users_top.sort(reverse=True) #[ match_percent, users, name_top_artists, url_top_artist]
+
+    #get the length of the matches so that it can be used to error check and send info for template
+    size = len(all_users_top)
+
+    context = {
+        "profile": profile, 
+        "all_matches": all_users_top,
+        "size": len(all_users_top)
+    }
+
+    
+    return render(request, "musicmatch/matches.html", context)
+
+class ShowMatchPage(LoginRequiredMixin, DetailView):
+    model = UserProfile
+    context_object_name = "profile"
+    template_name = 'musicmatch/profile_page.html'
+    login_url = '/login/'
+
+    def get_context_data(self, **kwargs):
+        ''' get logged in users info '''
+
+        context = super(ShowMatchPage, self).get_context_data(**kwargs)
+        
+        # this will show the logged-in user's page; if no user logged in, it won't work
+        context['self'] = UserProfile.objects.get(user=self.request.user)
+        context['match_profile'] = True
+        return context
+        

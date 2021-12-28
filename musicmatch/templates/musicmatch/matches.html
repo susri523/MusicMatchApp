@@ -1,0 +1,45 @@
+{% extends "musicmatch/base.html" %}
+
+{% block content %}
+
+<div class="column is-4 is-offset-4">
+
+{% if size != 0 %}
+<h1 class="title">Here are your matches! </h1>
+<hr>
+
+
+{% for percent, match, artists, artists_long in all_matches %}
+<div class="box" >
+
+<form action="{% url 'match_user_page' match.pk %}">
+    {% csrf_token %}
+    <button class="button is-block is-info is-large is-fullwidth">Meet {{match.first_name}}!</button>
+</form>
+
+<br>
+<h3>Match Score: {{percent}}% </h3><br> 
+{{match.first_name}}'s top 3 artists:
+<ul>
+{% for name, url in artists %}
+<li>{{name}}</li>
+
+{% endfor %}
+</ul>
+<br>
+
+<form action="{% url 'matches' %}" method='POST'>
+    {% csrf_token %}
+    <button class="button is-block is-info is-large is-fullwidth">Get Events for Us!</button>
+</form>
+
+</div>
+{% endfor %}
+
+{% else %}
+Sorry, you have no matches :(
+{% endif %}
+
+</div>
+
+{% endblock %}

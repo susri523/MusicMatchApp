@@ -61,3 +61,6 @@ class UserProfile(models.Model):
     
     def get_tokens(self):
         return self.access_token, self.refresh_token 
+    
+    def get_other_users(self):
+        return UserProfile.objects.all().exclude(pk=self.pk)
