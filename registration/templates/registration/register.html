@@ -1,0 +1,18 @@
+<!-- registration/templates/registration/register.html -->
+{% extends "musicmatch/base.html" %}
+
+{% block content %}
+<form method="POST" action="{% url 'register' %}">
+	{% csrf_token %}
+	
+	{{form}}
+	
+	<input type="submit">
+
+    <input type="hidden" name="email" value="{{userinfo.email}}">
+    <input type="hidden" name="name" value="{{userinfo.display_name}}">
+    <input type="hidden" name="token" value="{{token}}">
+    <input type="hidden" name="refresh_token" value="{{refresh_token}}">
+	
+</form>
+{% endblock %}

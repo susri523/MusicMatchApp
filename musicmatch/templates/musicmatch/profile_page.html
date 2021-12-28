@@ -1,0 +1,28 @@
+{% extends "musicmatch/base.html" %}
+
+{% block content %}
+
+<div class="column is-4 is-offset-4">
+<h1 class="title">  Welcome {{profile.first_name}} {{profile.last_name}}! </h1>
+  <h3> ({{profile.get_pronouns}}) </h3>
+ 
+  <br>
+  Birthday: {{profile.dob}}
+
+  <br>
+  <br>
+
+  <form action="{% url 'complete_profile' profile.pk %}" method='POST'>
+    {% csrf_token %}
+
+    <button class="button is-block is-info is-small is-fullwidth">Update my info!</button>
+  </form>
+
+<br>
+
+<br>
+
+
+</div>
+
+{% endblock %}

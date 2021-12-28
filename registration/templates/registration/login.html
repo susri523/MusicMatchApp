@@ -1,0 +1,17 @@
+<!-- registration/login.html -->
+{% extends "musicmatch/base.html" %}
+
+{% block content %}
+
+<h1>Please log in to continue</h1>
+<form method="post">
+
+    {% csrf_token %}
+    {{form}}
+    <input type="submit">
+    
+</form>
+
+<h2>Don't have an account?</h2>
+<a href="/registration/register">Register here</a> for a new account.
+{% endblock %}

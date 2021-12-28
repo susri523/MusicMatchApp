@@ -1,10 +1,19 @@
 import requests
 
-from django.shortcuts import render
-from django.views.generic import TemplateView, ListView, CreateView
-from django.contrib import messages
+from django.shortcuts import render, redirect 
 
+from django.views.generic import TemplateView, ListView, CreateView, DetailView, UpdateView
+
+from django.contrib import messages
+from django.contrib.auth.models import User # the Django User model
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+from .models import UserProfile
+from .forms import Update_UserProfile
 from .helpers.access_tokens import getUser, getAccessToken, getUserToken
+
+
 
 
 # Create your views here.
@@ -85,10 +94,38 @@ def callback(request, code=''):
 
     #return cookie here 
 
+    # create a form and send it back to the client to fill it in
+    form = UserCreationForm()
+
     context = {
          "userinfo": userinfo, 
          "token": token, 
-         "refresh_token": refresh_token
+         "refresh_token": refresh_token,
+         "form": form
     }
-    return render(request, 'musicmatch/signup.html',context)
 
+    # return render(request, 'musicmatch/signup.html',context)    
+    return render(request, 'registration/register.html', context)
+
+
+# Create your views here.
+class UpdateProfile(LoginRequiredMixin, UpdateView):
+    '''inherit from updateview'''
+    model = UserProfile
+    form_class = Update_UserProfile
+    template_name = 'musicmatch/update_profile.html'
+    login_url = '/login/'
+
+class ShowProfilePage(LoginRequiredMixin, DetailView):
+    model = UserProfile
+    context_object_name = "profile"
+    template_name = 'musicmatch/profile_page.html'
+    login_url = '/login/'
+
+    def get_object(self):
+        
+        # this will show the logged-in user's page; if no user logged in, it won't work
+        profile = UserProfile.objects.get(user=self.request.user)
+
+        # return this context dictionary
+        return profile
