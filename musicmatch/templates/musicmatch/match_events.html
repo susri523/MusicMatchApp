@@ -1,0 +1,33 @@
+{% extends "musicmatch/base.html" %}
+
+{% block content %}
+
+{% if no_common %}
+    Sorry! You and {{match.first_name}} don't share any common genres.
+
+{% elif no_events %}
+    Sorry! There are currentlt no {{genre}} events 
+    for you and {{match.first_name}} in Boston right now. 
+
+{% else %}
+    <h3 class="title">{{genre}} events for you and {{match.first_name}}!</h3>
+    <br>
+
+{% for event in events %}
+
+<a href =  "{{event.url}}"> {{event.name}} on {{event.dates.start.localDate}} at {{event.promoter.name}}</a> <br>
+
+{% if event.images.0 %}
+<a href =  "{{event.url}}"> <img src="{{event.images.0.url}}" width="200" height="200"></a> <br>
+{% endif %}
+
+{%endfor%}
+
+{% endif %}
+
+
+
+
+
+
+{% endblock %}

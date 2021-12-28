@@ -13,6 +13,7 @@ from django.contrib.auth.decorators import login_required
 from .models import UserProfile
 from .forms import Update_UserProfile
 from .helpers.access_tokens import getUser, getAccessToken, getUserToken, refreshAuth
+from .helpers.genre import genreListConsolidate, compareGenres
 
 
 
@@ -330,9 +331,118 @@ class ShowMatchPage(LoginRequiredMixin, DetailView):
         ''' get logged in users info '''
 
         context = super(ShowMatchPage, self).get_context_data(**kwargs)
-        
+
         # this will show the logged-in user's page; if no user logged in, it won't work
         context['self'] = UserProfile.objects.get(user=self.request.user)
         context['match_profile'] = True
         return context
         
+def getTopGenres(pk):
+    ''' helper function that takes the email and 
+        makes an api call to get the users top genres 
+        and return a consolidated list '''
+
+    profile = UserProfile.objects.get(pk=pk)
+    token, refresh_token = profile.get_tokens()
+
+    #set up the auth head to pass in to the header for the api call 
+    authorization = f'Bearer {token}'      
+
+    headers = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'Authorization': authorization,
+    }
+
+    #make the api call for top artists and return response to json 
+    response = requests.get('https://api.spotify.com/v1/me/top/artists', headers=headers)
+    data = response.json()
+
+    #if there is an error then refresh the a_token
+    if 'error' in data.keys():
+  
+        #call RefreshAuth and get the new_token_info and pick out a_token 
+        new_token_info = refreshAuth(refresh_token)
+        new_access_token = new_token_info['access_token']
+        
+        #update the db with the new a_token for this email pk and commit 
+        profile.token = new_access_token
+        profile.save()
+
+        # set up auth_head with new token and proper headers
+        authorization = f'Bearer {new_access_token}'      
+
+        headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': authorization,
+        }
+
+        #make api call to for top artists and store json response in data 
+        response = requests.get('https://api.spotify.com/v1/me/top/artists', headers=headers)
+        data = response.json()
+
+    #data comes back with items key in dict
+    data = data['items']
+    genres = []
+
+    #iterate through data.items to retrieve just the genre of the artist
+    for artist in data:
+        genres.append(artist['genres'])
+    
+
+    # make a list of the users info and the consolidated genre list
+    return [profile, genreListConsolidate(genres)]
+
+@login_required
+def getEvents(request, pk):
+    ''' /getEvents path takes 
+        both the self and other users emails and compares their genres
+        using the list of genres, it takes the first item in the list and 
+        makes a call to the ticketmaster api to get events for that genre
+        in Boston (02215) 
+    '''
+
+    #retrieve the emails of self and other
+    self = UserProfile.objects.get(user=request.user)
+    other = UserProfile.objects.get(pk=pk)
+
+    #get top genres for each user 
+    user_top = getTopGenres(self.pk) # [users, genres] where genres is a sorted list
+    other_top = getTopGenres(other.pk) # [users, genres]
+
+    #compare genres
+    genre = compareGenres(user_top[1], other_top[1])
+
+    context = {         
+        "profile": self,
+        "match": other
+    }
+
+    # if the genre list has more than one genre 
+    if len(genre) >= 0:  
+
+        #retrieve the first genre      
+        classificationName = genre[0] 
+
+        #enter the classificationName into the api call and get json response back 
+        response = requests.get(f"https://app.ticketmaster.com/discovery/v2/events.json?apikey=PBSmqVGp0ZUUCVC3VKJ3oTH3SWnidD7S&classificationName=music&countryCode=US&postalCode=02215&classificationName={classificationName}")
+        json_res = response.json()
+
+        context['genre'] = genre[0]
+        
+        #if the response is empty show no_results page
+        if json_res["page"]["totalElements"] == 0:
+            context['no_events'] = True
+            return render(request, 'musicmatch/match_events.html', context)
+
+        #otherwise grab the info from _embedded.events in the reponse and render it 
+        else: 
+            context['events'] = list(json_res["_embedded"]["events"])
+          
+            return render(request, "musicmatch/match_events.html", context)
+    
+    #no common umbrella genres 
+    context['no_common'] = True
+
+    return render(request, 'musicmatch/match_events.html')

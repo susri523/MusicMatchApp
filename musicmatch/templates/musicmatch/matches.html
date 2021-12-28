@@ -28,7 +28,7 @@
 </ul>
 <br>
 
-<form action="{% url 'matches' %}" method='POST'>
+<form action="{% url 'match_events' match.pk %}" method='POST'>
     {% csrf_token %}
     <button class="button is-block is-info is-large is-fullwidth">Get Events for Us!</button>
 </form>

@@ -21,6 +21,13 @@
     Want to reach out ? 
     <br>
     Email: {{profile.email}}
+
+    
+<form action="{% url 'match_events' profile.pk %}" method='POST'>
+  {% csrf_token %}
+  <button class="button is-block is-info is-large is-fullwidth">Get Events for Us!</button>
+</form>
+
   {% else %}
   <form action="{% url 'complete_profile' profile.pk %}" method='POST'>
     {% csrf_token %}

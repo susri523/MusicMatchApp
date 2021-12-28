@@ -17,6 +17,8 @@ urlpatterns = [
     path('top_artists', getUserTopArtist,name='top_artists'),
     path('matches', getMatches, name='matches'),
     path('match_user_page/<int:pk>', ShowMatchPage.as_view(), name='match_user_page'),
+    path('get_events/<int:pk>', getEvents, name='match_events'),
+
 
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
