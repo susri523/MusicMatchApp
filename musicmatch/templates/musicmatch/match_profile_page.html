@@ -1,0 +1,36 @@
+{% extends "musicmatch/base.html" %}
+
+{% block content %}
+
+<div class="column is-4 is-offset-4">
+
+<h1 class="title"> Meet {{match.first_name}} {{match.last_name}}! </h1>
+
+<!-- Pronoun and Birthday display -->
+<h3> ({{match.get_pronouns_display}}) </h3>
+
+<br>
+Birthday: {{match.dob}}
+
+<br>
+<br>
+
+
+Want to reach out ? 
+<br>
+Email: {{match.email}}  
+
+<form action="{% url 'match_events' match.pk %}" method='POST'>
+  {% csrf_token %}
+  <button class="button is-block is-info is-large is-fullwidth">Get Events for Us!</button>
+</form>
+
+
+<br>
+
+<br>
+
+
+</div>
+
+{% endblock %}

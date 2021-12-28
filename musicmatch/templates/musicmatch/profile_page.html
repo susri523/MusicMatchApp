@@ -3,37 +3,24 @@
 {% block content %}
 
 <div class="column is-4 is-offset-4">
-<h1 class="title">  
-  {% if match_profile %}
-  Meet 
-  {% else %}
-  Welcome 
-  {% endif %}
-  {{profile.first_name}} {{profile.last_name}}! </h1>
-  <h3> ({{profile.get_pronouns_display}}) </h3>
- 
-  <br>
+
+
+<h1 class="title"> Welcome {{profile.first_name}} {{profile.last_name}}! </h1>
+
+<!-- Pronoun and Birthday display -->
+<h3> ({{profile.get_pronouns_display}}) </h3>
+
+<br>
+{% if profile.dob %}
   Birthday: {{profile.dob}}
+{% endif %}
+<br>
+<br>
 
-  <br>
-  <br>
-  {% if match_profile %}
-    Want to reach out ? 
-    <br>
-    Email: {{profile.email}}
-
-    
-<form action="{% url 'match_events' profile.pk %}" method='POST'>
-  {% csrf_token %}
-  <button class="button is-block is-info is-large is-fullwidth">Get Events for Us!</button>
-</form>
-
-  {% else %}
-  <form action="{% url 'complete_profile' profile.pk %}" method='POST'>
+  <form action="{% url 'complete_profile' profile.pk %}">
     {% csrf_token %}
     <button class="button is-block is-info is-small is-fullwidth">Update my info!</button>
   </form>
-  {% endif %}
 
 <br>
 

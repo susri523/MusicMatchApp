@@ -28,8 +28,8 @@ class UserProfile(models.Model):
     dob = models.DateField(null=True, blank=True)
 
     # spotify token attributes 
-    access_token = models.CharField(max_length = 300, blank = True)
-    refresh_token = models.CharField(max_length = 300, blank = True)
+    access_token = models.CharField(max_length = 500, blank = True)
+    refresh_token = models.CharField(max_length = 500, blank = True)
 
     def __str__ (self):
         ''' string representation for UserProfile '''

@@ -106,13 +106,13 @@ def callback(request, code=''):
 ######                           PROFILE RELATED                              ###### 
 ####################################################################################
 
-class UpdateProfile(LoginRequiredMixin, UpdateView):
+class UpdateProfile(UpdateView):
     ''' inherit from updateview and login required and use form class 
         to update the first name, last name, pronouns, dob '''
     model = UserProfile
     form_class = Update_UserProfile
     template_name = 'musicmatch/update_profile.html'
-    login_url = '/login/'
+    # login_url = '/login/'
 
 class ShowProfilePage(LoginRequiredMixin, DetailView):
     ''' inherit from detailview and login required and override get_object 
@@ -291,7 +291,8 @@ def getMatches(request):
 
     #if non empty list then sort by match_percent and descending order
     if all_users_top:
-        all_users_top.sort(reverse=True) #[ match_percent, users, top3, all_top ]
+        # print(all_users_top)
+        all_users_top.sort(reverse=True, key=lambda x: x[0]) #[ match_percent, users, top3, all_top ]
 
     # pass the profile, list of all matches, percent and their top artist, and the number of matches 
     # to render in html  
@@ -309,8 +310,8 @@ class ShowMatchPage(LoginRequiredMixin, DetailView):
         for the UserProfile using the pk  
         to show detail view for the logged in user '''
     model = UserProfile
-    context_object_name = "profile"
-    template_name = 'musicmatch/profile_page.html'
+    context_object_name = "match"
+    template_name = 'musicmatch/match_profile_page.html'
     login_url = '/login/'
 
     def get_context_data(self, **kwargs):
@@ -321,8 +322,7 @@ class ShowMatchPage(LoginRequiredMixin, DetailView):
         context = super(ShowMatchPage, self).get_context_data(**kwargs)
 
         # this will show the logged-in user's page; if no user logged in, it won't work
-        context['self'] = UserProfile.objects.get(user=self.request.user)
-        context['match_profile'] = True
+        context['profile'] = UserProfile.objects.get(user=self.request.user)
         return context
 
 ####################################################################################

@@ -2,32 +2,32 @@
 
 {% block content %}
 
+<!-- when no common genres -->
 {% if no_common %}
     Sorry! You and {{match.first_name}} don't share any common genres.
 
+<!-- when no events found -->
 {% elif no_events %}
     Sorry! There are currentlt no {{genre}} events 
     for you and {{match.first_name}} in Boston right now. 
 
+<!-- display the events -->
 {% else %}
     <h3 class="title">{{genre}} events for you and {{match.first_name}}!</h3>
     <br>
 
-{% for event in events %}
+    <!-- for each of the events display the name, date, venue -->
+    {% for event in events %}
 
-<a href =  "{{event.url}}"> {{event.name}} on {{event.dates.start.localDate}} at {{event.promoter.name}}</a> <br>
+        <a href =  "{{event.url}}"> {{event.name}} on {{event.dates.start.localDate}} at {{event.promoter.name}}</a> <br>
+        <!-- if images are available display them with a link to the event url -->
+        {% if event.images.0 %}
+            <a href =  "{{event.url}}"> <img src="{{event.images.0.url}}" width="200" height="200"></a> <br>
+        {% endif %}
 
-{% if event.images.0 %}
-<a href =  "{{event.url}}"> <img src="{{event.images.0.url}}" width="200" height="200"></a> <br>
+    {%endfor%}
+
 {% endif %}
-
-{%endfor%}
-
-{% endif %}
-
-
-
-
 
 
 {% endblock %}

@@ -4,40 +4,44 @@
 
 <div class="column is-4 is-offset-4">
 
+<!-- matches found -->
 {% if size != 0 %}
-<h1 class="title">Here are your matches! </h1>
-<hr>
+    <h1 class="title">Here are your matches! </h1>
+    <hr>
 
+    <!-- for each of the matches separate out all the info -->
+    {% for percent, match, artists, artists_long in all_matches %}
+        <div class="box" >
+        
+        <!-- button to the mattch's user page -->
+        <form action="{% url 'match_user_page' match.pk %}">
+            {% csrf_token %}
+            <button class="button is-block is-info is-large is-fullwidth">Meet {{match.first_name}}!</button>
+        </form>
 
-{% for percent, match, artists, artists_long in all_matches %}
-<div class="box" >
+        <br>
+        <!-- display the match percent and loop through the short list of top 3 artists -->
+        <h3>Match Score: {{percent}}% </h3><br> 
+            {{match.first_name}}'s top 3 artists:
+        <ul>
+            {% for name, url in artists %}
+                <li>{{name}}</li>
+            {% endfor %}
+        </ul>
+        <br>
 
-<form action="{% url 'match_user_page' match.pk %}">
-    {% csrf_token %}
-    <button class="button is-block is-info is-large is-fullwidth">Meet {{match.first_name}}!</button>
-</form>
+        <!-- button for finding events for you and the match -->
+        <form action="{% url 'match_events' match.pk %}" method='POST'>
+            {% csrf_token %}
+            <button class="button is-block is-info is-large is-fullwidth">Get Events for Us!</button>
+        </form>
 
-<br>
-<h3>Match Score: {{percent}}% </h3><br> 
-{{match.first_name}}'s top 3 artists:
-<ul>
-{% for name, url in artists %}
-<li>{{name}}</li>
+        </div>
+    {% endfor %}
 
-{% endfor %}
-</ul>
-<br>
-
-<form action="{% url 'match_events' match.pk %}" method='POST'>
-    {% csrf_token %}
-    <button class="button is-block is-info is-large is-fullwidth">Get Events for Us!</button>
-</form>
-
-</div>
-{% endfor %}
-
+<!-- no matches found -->
 {% else %}
-Sorry, you have no matches :(
+    Sorry, you have no matches :(
 {% endif %}
 
 </div>
