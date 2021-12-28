@@ -2,65 +2,51 @@ from django.db import models
 from django.contrib.auth.models import User # the Django User model
 from django.urls import reverse
 
-
 # Create your models here.
 
 class UserProfile(models.Model):
+    ''' schema for UserProfile model '''
 
-    HeHim = 'HH'
-    SheHer = 'SS'
-    TheyThem = 'TT'
-    HeThey = 'HT'
-    SheThey = 'ST'
-    Ask = 'AM'
-
+    # PRONOUNS (stored value, display label)
     PRONOUNS = [
-        (HeHim, 'He/Him/His'),
-        (SheHer, 'She/Her/Hers'),
-        (TheyThem, 'They/Them/Theirs'),
-        (HeThey, 'He/They'),
-        (SheThey, 'She/They'),
-        (Ask, 'Please Ask For My Pronouns'),
+        ('HH', 'He/Him/His'),
+        ('SS', 'She/Her/Hers'),
+        ('TT', 'They/Them/Theirs'),
+        ('HT', 'He/They'),
+        ('ST', 'She/They'),
+        ('AM', 'Please Ask For My Pronouns'),
     ]
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True) # each profile is associated with at most one User
+    # using django user field for login so one to one relationship to bind to profile 
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True) 
 
-    email = models.CharField(max_length = 120)
+    #other personal attributes 
+    email = models.EmailField(blank=True)
     first_name = models.CharField(max_length = 64, blank = True)
     last_name = models.CharField(max_length = 64, blank = True)
-
-    #created a drop down menu for selecting a pronoun
-    pronouns = models.CharField(max_length=4, choices=PRONOUNS, default=Ask, blank=True)
-
+    pronouns = models.CharField(max_length=4, choices=PRONOUNS, default='AM', blank=True)
     dob = models.DateField(null=True, blank=True)
+
+    # spotify token attributes 
     access_token = models.CharField(max_length = 300, blank = True)
     refresh_token = models.CharField(max_length = 300, blank = True)
 
     def __str__ (self):
+        ''' string representation for UserProfile '''
         return f"{self.first_name} - {self.email}"
 
     def get_absolute_url(self):
-        '''Provide a url to show this object'''
+        ''' Provide a url to show this object 
+            after create and update class based view '''
         return reverse('profile_page')
-
-    def get_pronouns(self):
-        """ Return preferred Pronouns"""
-
-        if self.pronouns == 'HH':
-            return 'He/Him/His'
-        elif self.pronouns == 'SS':
-            return 'She/Her/Hers'
-        elif self.pronouns == 'TT':
-            return 'They/Them/Theirs'
-        elif self.pronouns == 'HT':
-            return 'He/They'
-        elif self.pronouns == 'ST':
-            return 'She/They'
-        elif self.pronouns == 'AM':
-            return 'Please Ask For My Pronouns'
     
     def get_tokens(self):
+        ''' accessor method for both the access token 
+            and refresh token for the user '''
         return self.access_token, self.refresh_token 
     
     def get_other_users(self):
+        ''' accessor method for all other users in db 
+            except logged in user 
+        '''
         return UserProfile.objects.all().exclude(pk=self.pk)
