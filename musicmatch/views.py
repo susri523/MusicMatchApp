@@ -323,7 +323,13 @@ class ShowMatchPage(LoginRequiredMixin, DetailView):
         context = super(ShowMatchPage, self).get_context_data(**kwargs)
 
         # this will show the logged-in user's page; if no user logged in, it won't work
-        context['profile'] = UserProfile.objects.get(user=self.request.user)
+        profile = UserProfile.objects.get(user=self.request.user)
+        context['profile'] = profile
+        match = self.get_object()
+        if match in profile.get_friends():
+            context['already_friend'] = True
+        else:
+            context['already_friend'] = False
         return context
 
 ####################################################################################
@@ -402,3 +408,52 @@ def getEvents(request, pk):
     context['no_common'] = True
 
     return render(request, 'musicmatch/match_events.html')
+
+####################################################################################
+######                            FRIEND RELATED                              ###### 
+####################################################################################
+
+def makeFriendRequest(request, pk):
+    ''' make a friend request and add them to the pending list'''
+   
+    # get the logged in user and retrieve the user with passed in pk 
+    self = UserProfile.objects.get(user=request.user)
+    other = UserProfile.objects.get(pk=pk)
+
+    # update the logged in user.friend_request to add the matched user 
+    self.friend_requests.add(other)
+
+    # save user 
+    self.save()
+
+    context = {
+        'profile': self
+    }
+
+    # redirect to profile page for the logged in user 
+    return render(request, 'musicmatch/profile_page.html', context)
+
+
+def acceptFriendRequest(request, pk):
+    ''' accept an already pending friend request '''
+    
+    # get the logged in user and retrieve the user with passed in pk 
+    self = UserProfile.objects.get(user=request.user)
+    other = UserProfile.objects.get(pk=pk)
+
+    # other made the initial request so remove self from other's pending requests list
+    other.friend_requests.remove(self)
+
+    # then add each to the other's friends list (symmetric) and save the objects 
+    self.friends.add(other)
+    self.save()
+    other.friends.add(self)
+    other.save()
+
+    context = {
+        'profile': self
+    }
+
+    # redirect to profile page for the logged in user 
+    return render(request, 'musicmatch/profile_page.html', context)
+    

@@ -15,8 +15,54 @@
   Birthday: {{profile.dob}}
 {% endif %}
 <br>
-<br>
 
+
+<!-- requests made so far  -->
+{% if profile.get_friend_requests %}
+<hr>
+Your friend requests! 
+<ul>
+  {% for friend_req in profile.get_friend_requests %}
+      <li>{{friend_req.first_name}} {{friend_req.last_name}}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+<!-- requests to accept  -->
+{% if profile.get_pending_requests %}
+<hr>
+Accept these requests to become friends! 
+<ul>
+  {% for friend_req in profile.get_pending_requests %}
+    <li>
+       
+
+      <form action="{% url 'accept_request' friend_req.pk %}">
+        {% csrf_token %}
+        {{friend_req.first_name}} {{friend_req.last_name}} <button class="button">Accept Request!</button>
+      </form>
+
+    </li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+<!-- list of friends  -->
+{% if profile.get_friends %}
+<hr>
+My friends! 
+<ul>
+  {% for friend in profile.get_friends %}
+    <li>
+      {{friend.first_name}} {{friend.last_name}} 
+
+    </li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+<br>
+<!-- update profile -->
   <form action="{% url 'complete_profile' profile.pk %}">
     {% csrf_token %}
     <button class="button is-block is-info is-small is-fullwidth">Update my info!</button>

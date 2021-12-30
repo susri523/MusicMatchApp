@@ -20,6 +20,24 @@ Want to reach out ?
 <br>
 Email: {{match.email}}  
 
+<br>
+<br>
+<!-- if already friend don't display request button -->
+{% if already_friend %}
+<p style='color:red'>*Already friend</p>
+
+{% else %}
+
+<!-- make friend request button -->
+<form action="{% url 'friend_request' match.pk %}" method='POST'>
+  {% csrf_token %}
+  <button class="button is-block is-info is-large is-fullwidth">Send friend request!</button>
+</form>
+{% endif %}
+
+
+<br> 
+<!-- find events button  -->
 <form action="{% url 'match_events' match.pk %}" method='POST'>
   {% csrf_token %}
   <button class="button is-block is-info is-large is-fullwidth">Get Events for Us!</button>

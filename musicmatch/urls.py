@@ -26,6 +26,12 @@ urlpatterns = [
     path('match_user_page/<int:pk>', ShowMatchPage.as_view(), name='match_user_page'),
     path('get_events/<int:pk>', getEvents, name='match_events'),
 
+    # logged in user making friend request
+    path('friend_request/<int:pk>', makeFriendRequest, name='friend_request'),
+    # logged in user accepts friend request
+    path('accept_request/<int:pk>', acceptFriendRequest, name='accept_request'),
+
+
 
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

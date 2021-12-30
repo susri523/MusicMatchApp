@@ -31,6 +31,11 @@ class UserProfile(models.Model):
     access_token = models.CharField(max_length = 500, blank = True)
     refresh_token = models.CharField(max_length = 500, blank = True)
 
+    # friend related
+    # friend_requests must not be symmetrical so related name can be applied to allow for reverse lookup 
+    friend_requests = models.ManyToManyField('self', blank=True, symmetrical=False, related_name ='requests')
+    friends = models.ManyToManyField('self', blank=True)
+
     def __str__ (self):
         ''' string representation for UserProfile '''
         return f"{self.first_name} - {self.email}"
@@ -50,3 +55,16 @@ class UserProfile(models.Model):
             except logged in user 
         '''
         return UserProfile.objects.all().exclude(pk=self.pk)
+    
+    def get_friend_requests(self):
+        ''' for requests that self has sent '''
+        return self.friend_requests.all()
+
+    def get_pending_requests(self):
+        ''' for requests that another user has sent self'''
+        pending_requests = self.requests.all()  # use the reverse action to retrieve on m2m 
+        return pending_requests
+
+    def get_friends(self):
+        ''' get all friends'''
+        return self.friends.all()
