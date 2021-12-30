@@ -72,6 +72,7 @@ def callback(request, code=''):
 
     #retrieve user info response and get the json into userinfo
     response_userinfo = requests.get('https://api.spotify.com/v1/me/', headers=headers)
+    # print(response_userinfo)
     userinfo = response_userinfo.json()
 
     # # open connection to database

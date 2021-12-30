@@ -11,6 +11,7 @@
 </form> -->
 <br>
 
+{% if artists %}
 
 Top artists:<br>
 {% for name, url in artists %}
@@ -19,6 +20,11 @@ Top artists:<br>
 <p>
 </p>
 {% endfor %}
+{% else %}
+
+Sorry, you have no top artists :(
+
+{% endif %}
 
 </div>
 
